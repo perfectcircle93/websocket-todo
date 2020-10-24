@@ -2,7 +2,10 @@ const express = require('express');
 const socket = require('socket.io');
 const cors = require('cors');
 
-let tasks = ['Shopping', 'Go out with a dog'];
+let tasks = [
+  { id: 1, name: 'Shopping' }, 
+  { id: 2, name: 'Go out with a dog'}
+];
 
 const app = express();
 app.use(cors());
@@ -14,18 +17,17 @@ const server = app.listen(process.env.PORT || 8000, () => {
 const io = socket(server);
 
 io.on('connection', (socket) => {
-    console.log('New client.');
+    
     socket.emit('updateData', tasks);
-    console.log('Upated local list');
 
     socket.on('addTask', (newTask) => {
       tasks.push(newTask);
       socket.broadcast.emit('addTask', newTask);
     });
 
-    socket.on('removeTask', (idTask) => {
-      tasks.splice(idTask);
-      socket.broadcast.emit('removeTask', idTask);
+    socket.on('removeTask', (removedTask) => {
+      tasks.filter(task => {return task.id != removedTask.id})
+      socket.broadcast.emit('removeTask', removedTask);
     });
 
   }); 
